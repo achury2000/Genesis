@@ -12,6 +12,36 @@
 		<title>Un mensaje especial para Génesis si tu la chica de ojos lindos quieres salir con migo?</title>
 		<!-- Ensure webpack loads assets using relative paths on GitHub Pages -->
 		<script>window.__webpack_public_path__ = './';</script>
+		<!-- Fallback: if images are requested from site root (/static/...), rewrite them to include the repo path '/Genesis' -->
+		<script>
+		(function(){
+			const repoPrefix = '/Genesis';
+			function rewriteImg(el){
+				if(!el||!el.src) return;
+				try{
+					const u = new URL(el.src, location.href);
+					// If path starts with /static/media, prefix the repo path
+					if(u.pathname.startsWith('/static/media/')){
+						el.src = repoPrefix + u.pathname + u.search + u.hash;
+					}
+				}catch(e){
+					// Relative src like static/media/... -> make it relative to current path
+					if(el.src.indexOf('static/media/')===0) el.src = './' + el.src;
+				}
+			}
+			const mo = new MutationObserver(muts=>{
+				for(const m of muts){
+					if(m.type==='attributes' && m.target && m.target.tagName==='IMG') rewriteImg(m.target);
+					if(m.addedNodes) for(const n of m.addedNodes) if(n.nodeType===1){
+						if(n.tagName==='IMG') rewriteImg(n);
+						n.querySelectorAll && n.querySelectorAll('img').forEach(rewriteImg);
+					}
+				}
+			});
+			mo.observe(document.documentElement, {childList:true, subtree:true, attributes:true, attributeFilter:['src']});
+			window.addEventListener('load', ()=>document.querySelectorAll('img').forEach(rewriteImg));
+		})();
+		</script>
 		<script defer="defer" src="static/js/main.8d83fba7.js"></script>
 		<link href="static/css/main.887317f5.css" rel="stylesheet">
 	</head>
